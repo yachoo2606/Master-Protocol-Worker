@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <springProperty scope="context" name="logstashDestination_one" source="logging.logstash.destinationOne"/>
+    <springProperty scope="context" name="logstashDestination_two" source="logging.logstash.destinationTwo"/>
+    <springProperty scope="context" name="logstashDestination_three" source="logging.logstash.destinationThree"/>
+    <springProperty scope="context" name="appName" source="spring.application.name"/>
+
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${logstashDestination_one}</destination>
+        <destination>${logstashDestination_two}</destination>
+        <destination>${logstashDestination_three}</destination>
+        <connectionStrategy>
+            <random>
+            </random>
+        </connectionStrategy>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <mdc />
+                <context />
+                <logLevel />
+                <loggerName />
+                <pattern>
+                    <pattern>
+                        {
+                        "app": "${appName}"
+                        }
+                    </pattern>
+                </pattern>
+                <threadName />
+                <message />
+                <logstashMarkers />
+                <stackTrace />
+            </providers>
+        </encoder>
+    </appender>
+    <root level="info">
+        <appender-ref ref="logstash" />
+    </root>
+</configuration>

@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: protocol-worker-${WORKER_ID:worker-ERROR}
+
+server:
+  port: 11000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${PEER_1_URL:http://localhost:8761/eureka}
+
+# ELK stack properties
+logging:
+  logstash:
+    destinationOne: ${LOGSTASH_DESTINATION_ONE:localhost:5000}
+    destinationTwo: ${LOGSTASH_DESTINATION_TWO:localhost:5001}
+    destinationThree: ${LOGSTASH_DESTINATION_THREE:localhost:5002}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
