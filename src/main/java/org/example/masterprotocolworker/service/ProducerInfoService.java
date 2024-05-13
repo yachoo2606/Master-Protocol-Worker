@@ -1,9 +1,7 @@
 package org.example.masterprotocolworker.service;
 
-import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -11,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -22,19 +19,11 @@ public class ProducerInfoService {
     @Autowired
     private EurekaClient eurekaClient;
 
-    @Autowired
-    private RestTemplate restTemplate;
+    private final RestTemplate restTemplate = new RestTemplate();
 
     private List<Application> getProducers(){
-        List<Application> producerApplications = new ArrayList<>();
-        Applications applications = eurekaClient.getApplications();
-        for(Application application: applications.getRegisteredApplications()){
-            for(InstanceInfo instanceInfo: application.getInstances()){
-               if(instanceInfo.getAppName().startsWith("PRODUCER-")){
-                   producerApplications.add(application);
-               }
-            }
-        }
+        List<Application> producerApplications = eurekaClient.getApplications().getRegisteredApplications().stream()
+                .filter(service -> service.getName().startsWith("PRODUCER-")).toList();
         producerApplications.forEach(System.out::println);
         return producerApplications;
     }
@@ -44,7 +33,7 @@ public class ProducerInfoService {
         List<Application> producers = getProducers();
 
         producers.forEach( producer -> {
-            ResponseEntity<String> response = restTemplate.getForEntity(producer.getInstances().get(0).getHomePageUrl()+"actuator/metrics/system.load.average.1m",String.class);
+            ResponseEntity<String> response = restTemplate.getForEntity(producer.getInstances().get(0).getHomePageUrl()+"actuator/metrics",String.class);
             log.info( producer.getName() + " Data:"+ response.getBody());
         });
 
