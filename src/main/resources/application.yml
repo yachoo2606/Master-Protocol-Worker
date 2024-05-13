@@ -3,7 +3,7 @@ spring:
     name: protocol-worker-${WORKER_ID:worker-ERROR}
 
 server:
-  port: 11000
+  port: ${PORT:11000}
 
 eureka:
   client:
