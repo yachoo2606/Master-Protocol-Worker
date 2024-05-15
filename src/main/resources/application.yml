@@ -1,9 +1,16 @@
 spring:
   application:
     name: protocol-worker-${WORKER_ID:worker-ERROR}
+  servlet:
+    multipart:
+      max-request-size: 200MB
+      max-file-size: 200MB
 
 server:
   port: ${PORT:11000}
+  tomcat:
+    max-swallow-size: 209715200
+    max-http-form-post-size: 209715200
 
 eureka:
   client:
