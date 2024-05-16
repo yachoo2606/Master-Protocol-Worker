@@ -1,5 +1,6 @@
 package org.example.masterprotocolworker.service;
 
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.Getter;
@@ -33,7 +34,7 @@ public class ProducerInfoService {
     @Getter
     private final Map<String, ProducerInformation> producerInfoMap = new HashMap<>();
 
-    private List<Application> getProducers(){
+    public List<Application> getProducers(){
         List<Application> producerApplications = eurekaClient.getApplications().getRegisteredApplications().stream()
                 .filter(service -> service.getName().startsWith("PRODUCER-")).toList();
         producerApplications.forEach(System.out::println);
@@ -120,6 +121,15 @@ public class ProducerInfoService {
 
     private ProducerInformation getProducerInformation(String producerName) {
         return producerInfoMap.computeIfAbsent(producerName, k -> new ProducerInformation());
+    }
+
+    public String getUrl(Application application){
+        InstanceInfo instanceInfo = application.getInstances().get(0);
+        return "http://"+
+                instanceInfo.getIPAddr()+
+                ":"+
+                instanceInfo.getPort();
+
     }
 
 }

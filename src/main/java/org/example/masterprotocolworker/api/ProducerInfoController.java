@@ -12,11 +12,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/producers")
-public class producerInfo {
+public class ProducerInfoController {
 
     private final ProducerInfoService producerInfoService;
 
-    public producerInfo(ProducerInfoService producerInfoService) {
+    public ProducerInfoController(ProducerInfoService producerInfoService) {
         this.producerInfoService = producerInfoService;
     }
 
