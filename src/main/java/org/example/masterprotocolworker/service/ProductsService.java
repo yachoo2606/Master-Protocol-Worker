@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,16 +40,25 @@ public class ProductsService {
         List<Application> producers = this.producerInfoService.getProducers();
 
         Map<String,List<Product>> producerProductMap = new HashMap<>();
+        List<Product> notFoundProducts = new ArrayList<>();
 
-        for(Application producer : producers){
-            List<Product> productsForProducer = productList.stream()
-                    .filter(product -> hasProducerProduct(producer, product))
-                    .toList();
-
-            if(!productsForProducer.isEmpty()){
-                producerProductMap.put(producer.getName(), productsForProducer);
+        for (Product product : productList) {
+            boolean found = false;
+            for (Application producer : producers) {
+                if (hasProducerProduct(producer, product)) {
+                    producerProductMap
+                            .computeIfAbsent(producer.getName(), k -> new ArrayList<>())
+                            .add(product);
+                    found = true;
+                }
             }
+            if (!found) {
+                notFoundProducts.add(product);
+            }
+        }
 
+        if (!notFoundProducts.isEmpty()) {
+            producerProductMap.put("NOT-FOUND", notFoundProducts);
         }
 
         return producerProductMap;
