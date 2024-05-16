@@ -9,4 +9,5 @@ import lombok.Setter;
 public class ProducerInformation {
     private Long connectionSpeed;
     private Long connectionTime;
+    private Double systemLoadAverage1m;
 }

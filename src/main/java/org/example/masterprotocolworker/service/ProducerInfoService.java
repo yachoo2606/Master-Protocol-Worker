@@ -5,6 +5,7 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.example.masterprotocolworker.model.MetricResponse;
 import org.example.masterprotocolworker.model.ProducerInformation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -61,6 +62,7 @@ public class ProducerInfoService {
                 .forEach(producer -> {
                     measureConnectionTime(producer);
                     measureConnectionSpeed(producer);
+                    systemLoadAverage1m(producer);
                 });
     }
 
@@ -114,6 +116,26 @@ public class ProducerInfoService {
                 }
             }catch (Exception e) {
                 getProducerInformation(instanceInfo.getAppName()).setConnectionSpeed(-1L);
+                System.out.println("Failed to connect to " + instanceInfo.getIPAddr() + ":" + instanceInfo.getPort() + "-> "+e.getMessage());
+            }
+        });
+    }
+
+    private void systemLoadAverage1m(Application application){
+        eurekaClient.getApplication(application.getName()).getInstances().forEach(instanceInfo -> {
+            try{
+
+                ResponseEntity<MetricResponse> response = restTemplate.exchange(
+                        "http://"+instanceInfo.getIPAddr()+":"+instanceInfo.getPort()+"/actuator/metrics/system.load.average.1m",
+                        HttpMethod.GET,
+                        null,
+                        MetricResponse.class
+                );
+
+                getProducerInformation(instanceInfo.getAppName()).setSystemLoadAverage1m(response.getBody().getMeasurements().get(0).getValue());
+
+            }catch (Exception e) {
+                getProducerInformation(instanceInfo.getAppName()).setSystemLoadAverage1m(-1D);
                 System.out.println("Failed to connect to " + instanceInfo.getIPAddr() + ":" + instanceInfo.getPort() + "-> "+e.getMessage());
             }
         });
