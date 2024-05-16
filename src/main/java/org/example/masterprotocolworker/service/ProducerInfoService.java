@@ -37,7 +37,7 @@ public class ProducerInfoService {
     public List<Application> getProducers(){
         List<Application> producerApplications = eurekaClient.getApplications().getRegisteredApplications().stream()
                 .filter(service -> service.getName().startsWith("PRODUCER-")).toList();
-        producerApplications.forEach(System.out::println);
+        producerApplications.forEach(producer-> System.out.println(producer.getName()));
         return producerApplications;
     }
 

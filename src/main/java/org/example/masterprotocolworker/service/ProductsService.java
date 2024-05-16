@@ -25,7 +25,7 @@ public class ProductsService {
 
     private Boolean hasProducerProduct(Application producer, Product product){
         ResponseEntity<Product> response = this.restTemplate.exchange(
-                this.producerInfoService.getUrl(producer)+"/products/"+product.getName(),
+                this.producerInfoService.getUrl(producer)+"/products/check",
                 HttpMethod.POST,
                 new HttpEntity<>(product),
                 Product.class
