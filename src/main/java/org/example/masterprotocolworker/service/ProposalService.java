@@ -86,6 +86,9 @@ public class ProposalService {
             }
         }
 
+        // Log the final proposals for debugging
+        log.info("Final proposals: {}", finalProposals);
+
         // Step 8: Create and return the final Proposal object
         return new Proposal(finalProposals);
     }

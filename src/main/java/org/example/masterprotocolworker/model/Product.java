@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
-    Long id;
+    String id;
     String name;
     String model;
     String producer;
