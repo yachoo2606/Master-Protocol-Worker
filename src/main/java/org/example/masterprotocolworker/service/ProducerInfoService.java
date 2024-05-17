@@ -73,9 +73,9 @@ public class ProducerInfoService {
                 socket.getOutputStream().write(0);
                 long endTime = System.currentTimeMillis();
                 long duration = endTime - startTime;
-                getProducerInformation(instanceInfo.getAppName()).setConnectionTime(duration+1);
+                getProducerInformation(instanceInfo.getAppName()).getMeasurementBufferConnectionTime().addMeasurement(duration+1);
             } catch (IOException e) {
-                getProducerInformation(instanceInfo.getAppName()).setConnectionTime(-1L);
+                getProducerInformation(instanceInfo.getAppName()).getMeasurementBufferConnectionTime().addMeasurement(Double.MAX_VALUE);
                 System.out.println("Failed to connect to " + instanceInfo.getIPAddr() + ":" + instanceInfo.getPort() + "->  " + e.getMessage());
             }
         });
@@ -109,13 +109,13 @@ public class ProducerInfoService {
                     double dataSizeInMB = payload.length / (1024.0 * 1024.0);
                     double bandwidth = dataSizeInMB / timeTakenInSeconds; // MB/s
 
-                    getProducerInformation(instanceInfo.getAppName()).setConnectionSpeed((long) bandwidth);
+                    getProducerInformation(instanceInfo.getAppName()).getMeasurementBufferConnectionSpeed().addMeasurement(bandwidth);
 
                 } else {
-                    getProducerInformation(instanceInfo.getAppName()).setConnectionSpeed(-1L);
+                    getProducerInformation(instanceInfo.getAppName()).getMeasurementBufferConnectionSpeed().addMeasurement(Double.MAX_VALUE);
                 }
             }catch (Exception e) {
-                getProducerInformation(instanceInfo.getAppName()).setConnectionSpeed(-1L);
+                getProducerInformation(instanceInfo.getAppName()).getMeasurementBufferConnectionSpeed().addMeasurement(Double.MAX_VALUE);
                 System.out.println("Failed to connect to " + instanceInfo.getIPAddr() + ":" + instanceInfo.getPort() + "-> "+e.getMessage());
             }
         });
@@ -132,10 +132,10 @@ public class ProducerInfoService {
                         MetricResponse.class
                 );
 
-                getProducerInformation(instanceInfo.getAppName()).setSystemLoadAverage1m(response.getBody().getMeasurements().get(0).getValue());
+                getProducerInformation(instanceInfo.getAppName()).getMeasurementBufferSystemLoadAverage1m().addMeasurement(response.getBody().getMeasurements().get(0).getValue());
 
             }catch (Exception e) {
-                getProducerInformation(instanceInfo.getAppName()).setSystemLoadAverage1m(-1D);
+                getProducerInformation(instanceInfo.getAppName()).getMeasurementBufferSystemLoadAverage1m().addMeasurement(Double.MAX_VALUE);
                 System.out.println("Failed to connect to " + instanceInfo.getIPAddr() + ":" + instanceInfo.getPort() + "-> "+e.getMessage());
             }
         });

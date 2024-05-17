@@ -24,7 +24,7 @@ public class ProductsService {
     private final ProducerInfoService producerInfoService;
     private final RestTemplate restTemplate;
 
-    private Boolean hasProducerProduct(Application producer, Product product){
+    private Product hasProducerProduct(Application producer, Product product){
         ResponseEntity<Product> response = this.restTemplate.exchange(
                 this.producerInfoService.getUrl(producer)+"/products/check",
                 HttpMethod.POST,
@@ -32,7 +32,7 @@ public class ProductsService {
                 Product.class
                 );
 
-        return response.getBody()!=null;
+        return response.getBody()!=null ? response.getBody() : null;
     }
 
 
@@ -45,10 +45,11 @@ public class ProductsService {
         for (Product product : productList) {
             boolean found = false;
             for (Application producer : producers) {
-                if (hasProducerProduct(producer, product)) {
+                Product response = hasProducerProduct(producer, product);
+                if ( response != null) {
                     producerProductMap
                             .computeIfAbsent(producer.getName(), k -> new ArrayList<>())
-                            .add(product);
+                            .add(response);
                     found = true;
                 }
             }
