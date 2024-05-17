@@ -9,6 +9,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProducerProposal {
-    private long proposedValue;
+    private long producerCalculatedRating;
     private List<Product> products;
 }
