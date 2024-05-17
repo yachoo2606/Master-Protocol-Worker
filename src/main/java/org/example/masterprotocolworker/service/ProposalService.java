@@ -24,7 +24,7 @@ public class ProposalService {
     public Proposal getProposal(List<Product> products) {
         // Step 1: Get the producers with their respective products
         Map<String, List<Product>> producerProductMap = productsService.getProducersWithProduct(products);
-        Map<String, Long> producerCalculatedValues = new HashMap<>();
+        Map<String, Double> producerCalculatedValues = new HashMap<>();
 
         // Step 2: Calculate proposal values for each producer
         producerProductMap.forEach((producer, producersProduct) -> {
@@ -32,7 +32,7 @@ public class ProposalService {
                 producerCalculatedValues.put(producer, calculateProposal(producer));
             } catch (WrongValueException e) {
                 log.warn("{} set value to Long.MAX_VALUE", e.getMessage());
-                producerCalculatedValues.put(producer, Long.MAX_VALUE);
+                producerCalculatedValues.put(producer, Double.MAX_VALUE);
             }
         });
 
@@ -50,34 +50,39 @@ public class ProposalService {
         List<Product> bestProducerProducts = new ArrayList<>(producerProductMap.get(bestProducer));
         finalProposals.put(bestProducer, new ProducerProposal(producerCalculatedValues.get(bestProducer), bestProducerProducts));
 
-        // Step 6: Remove products assigned to the best producer from other producers' lists
+        // Step 6: Remove products assigned to the best producer from other producers' lists based on product ID
+        Set<String> bestProducerProductIds = bestProducerProducts.stream()
+                .map(Product::getId)
+                .collect(Collectors.toSet());
+
         for (String producer : producerProductMap.keySet()) {
             if (!producer.equals(bestProducer)) {
                 List<Product> filteredProducts = producerProductMap.get(producer)
                         .stream()
-                        .filter(product -> !bestProducerProducts.contains(product))
+                        .filter(product -> !bestProducerProductIds.contains(product.getId()))
                         .collect(Collectors.toList());
                 producerProductMap.put(producer, filteredProducts);
             }
         }
 
         // Step 7: Ensure all products from the initial request are covered by assigning remaining products to the next best producer
-        Set<Product> allAssignedProducts = finalProposals.values().stream()
+        Set<String> allAssignedProductIds = finalProposals.values().stream()
                 .flatMap(pp -> pp.getProducts().stream())
+                .map(Product::getId)
                 .collect(Collectors.toSet());
 
         for (Product product : products) {
-            if (!allAssignedProducts.contains(product)) {
+            if (!allAssignedProductIds.contains(product.getId())) {
                 // Find the next best producer that has this product
                 for (String producer : producerCalculatedValues.keySet()) {
-                    if (producerProductMap.get(producer).contains(product)) {
+                    if (producerProductMap.get(producer).stream().anyMatch(p -> p.getId().equals(product.getId()))) {
                         finalProposals.computeIfAbsent(producer, k -> new ProducerProposal(producerCalculatedValues.get(producer), new ArrayList<>()))
                                 .getProducts()
                                 .add(product);
                         // Remove the product from other producers' lists once it is assigned
                         producerProductMap.forEach((otherProducer, otherProducts) -> {
                             if (!otherProducer.equals(producer)) {
-                                otherProducts.remove(product);
+                                otherProducts.removeIf(p -> p.getId().equals(product.getId()));
                             }
                         });
                         break;
@@ -93,11 +98,11 @@ public class ProposalService {
         return new Proposal(finalProposals);
     }
 
-    private long calculateProposal(String producer) throws WrongValueException {
+    private Double calculateProposal(String producer) throws WrongValueException {
 
-        if(producer.equals("NOT-FOUND")) return Long.MAX_VALUE;
+        if(producer.equals("NOT-FOUND")) return Double.MAX_VALUE;
 
-        long proposedValue = 1L;
+        double proposedValue = 1D;
         ProducerInformation producerInformation = this.producerInfoService.getProducerInfoMap().get(producer);
 
         if(producerInformation.getConnectionSpeed()!=-1L){
