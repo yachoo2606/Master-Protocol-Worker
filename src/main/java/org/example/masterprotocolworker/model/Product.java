@@ -10,6 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Product {
+    Long id;
     String name;
     String model;
     String producer;
@@ -18,7 +19,9 @@ public class Product {
 
     @Override
     public String toString(){
-        return "[ name=" +
+        return "[id = "+
+                id+
+                ", name=" +
                 name +
                 ", model=" +
                 model +
